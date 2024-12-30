@@ -15,13 +15,13 @@
 # and created/activated the conda environment as specified in the README.
 # Then run:
 #
-#           snakemake
+#           snakemake -c 1
 #
 # You can modify the number of cores used by changing the -c parameter.
 #
 # Requirements:
-# This workflow requires XX GB of disk space and XX GB of RAM, and
-# takes about XX minutes to run on a 8-core machine.
+# To be safe, please run with ~5 GB of disk space, ~5 GB of RAM.
+# The workflow takes about <10 minutes to run using a single core.
 ######################################################
 out_dir = "output.ictv-challenge"
 logs_dir = f"{out_dir}/logs"

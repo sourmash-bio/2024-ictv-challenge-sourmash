@@ -26,24 +26,34 @@ def filter_benchmarks(benchmark_data, exclude_keywords):
 def summarize_benchmarks(benchmark_data):
     """Summarize the memory and time usage across all benchmarks."""
     df = pd.DataFrame(benchmark_data)
-    for col in ['max_rss', 'max_vms', 'max_uss', 'max_pss', 'io_in', 'io_out', 'mean_load', 'cpu_time']:
+    for col in ['max_rss', 'mean_load', 'cpu_time', 's']:
         df[col] = pd.to_numeric(df[col], errors='coerce')
-    
+
+    total_time_seconds = df['s'].astype(float).sum()
+    minutes = int(total_time_seconds // 60)
+    seconds = int(total_time_seconds % 60)
+
     summary = {
-        'total_time_s': df['s'].astype(float).sum(),
-        'total_max_rss': df['max_rss'].max(),
-        'total_max_vms': df['max_vms'].max(),
-        'total_cpu_time': df['cpu_time'].sum()
+        'total_time': f"{minutes}m {seconds}s",
+        'max_memory_rss_gb': round(df['max_rss'].max() / 1024.0, 2),
+        'max_cpu_utilization_cores': round(df['mean_load'].max() / 1000.0, 2)
     }
     return summary
 
 def write_benchmark_csv(output_file, benchmark_data):
     """Write benchmark data to a CSV file."""
-    keys = list(benchmark_data[0].keys())
+    # Define the order of columns
+    column_order = [
+        'rule', 's', 'h:m:s', 'max_rss', 'max_vms', 'max_uss', 'max_pss', 'io_in', 'io_out', 'mean_load', 'cpu_time'
+    ]
+    all_columns = [key for key in column_order if key in benchmark_data[0]]  # Ensure only valid keys are included
+
     with open(output_file, 'w', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=keys)
+        writer = csv.DictWriter(csvfile, fieldnames=all_columns)
         writer.writeheader()
-        writer.writerows(benchmark_data)
+        for data in benchmark_data:
+            filtered_data = {key: data.get(key, '') for key in all_columns}  # Ensure data matches column order
+            writer.writerow(filtered_data)
 
 def write_summary_csv(summary_file, summary):
     """Write summary data to a CSV file."""
@@ -56,11 +66,20 @@ def write_summary_csv(summary_file, summary):
 def main(args):
     # collect benchmark data
     benchmark_data = collect_benchmarks(args.file_list)
-    write_benchmark_csv(args.benchmark_output, benchmark_data)
+    write_benchmark_csv(args.benchmarks_csv, benchmark_data)
     # filter and summarize benchmark data
     filtered_data = filter_benchmarks(benchmark_data, args.exclude)
-    summary = summarize_benchmarks(filtered_data)
-    write_summary_csv(args.summary_output, summary)
+
+    filtered_summary = summarize_benchmarks(filtered_data)
+    write_summary_csv(args.summary_csv, filtered_summary)
+
+    full_summary = summarize_benchmarks(benchmark_data)
+    print("Workflow, including downloads and untar:")
+    for key, value in full_summary.items():
+        print(f"  {key}: {value}")
+    print("\nWorkflow, excluding downloads:")
+    for key, value in filtered_summary.items():
+        print(f"  {key}: {value}")
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Collect and summarize benchmark files.")

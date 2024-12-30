@@ -1,17 +1,15 @@
-######################################################
-# Snakefile for the ICTV Taxonomy Challenge #
+############################################################################
+# Workflow: sourmash classification of the ICTV Taxonomy Challenge Dataset #
 
-# This is a workflow that uses sourmash to classify
-# viral sequences to the ICTV VMR MSL39 (v4) database.
-# It downloads the ICTV Taxonomy Challenge dataset,
-# sketches the sequences, then uses `sourmash gather`
-# to find the closest reference genome. Finally, it
-# uses `sourmash tax` to assign taxonomy to the sequences
-# based on the reference genome and then converts the
-# results to the challenge output format.
+# This is a workflow that uses sourmash to classify viral sequences to
+# the ICTV VMR MSL39 (v4) database. It downloads the ICTV Taxonomy
+# Challenge dataset, sketches the sequences, then uses `sourmash gather`
+# to find the closest reference genome. Finally, it uses `sourmash tax`
+# to assign taxonomy to the sequences based on the reference genome
+# and then converts the results to the challenge output format.
 
 # To run:
-# First, make sure you've cloned the sourmash-ictv-challenge repo
+# First, make sure you've cloned the ictv-challenge-sourmash repo
 # and created/activated the conda environment as specified in the README.
 # Then run:
 #
@@ -20,9 +18,12 @@
 # You can modify the number of cores used by changing the -c parameter.
 #
 # Requirements:
-# To be safe, please run with ~5 GB of disk space, ~5 GB of RAM.
-# The workflow takes about <10 minutes to run using a single core.
-######################################################
+# The challenge dataset is ~1.5 GB and the database is <0.5 GB; classification
+# requires ~1 GB of RAM. To be safe, we recommend running on a machine with
+# at least 5 GB disk space, 5G RAM. The full workflow (including data download)
+# takes <15 minutes to run using a single core, and can be sped up by providing
+# additional resources, e.g. -c 4 or above.
+############################################################################
 out_dir = "output.ictv-challenge"
 logs_dir = f"{out_dir}/logs"
 
@@ -38,7 +39,6 @@ rule download_database:
     output:
         rocksdb_current = "vmr_MSL39_v4.skipm2n3-k24-sc100.rocksdb/CURRENT"
     params:
-        #download_link = "https://farm.cse.ucdavis.edu/~ctbrown/sourmash-db/ictv-vmr-msl39/vmr_MSL39_v4.skipm2n3-k24-sc100.rocksdb.tar.gz",
         download_link = "https://osf.io/download/f246c/",
         download_file = "vmr_MSL39_v4.skipm2n3-k24-sc100.rocksdb.tar.gz",
     benchmark: f"{logs_dir}/download_database.benchmark"
@@ -50,12 +50,12 @@ rule download_database:
 
 rule download_and_prep_ictv_challenge:
     output:
-        challenge_fromfile=f"{out_dir}/ictv-challenge.fromfile.csv",
+        challenge_fromfile="dataset-challenge.fromfile.csv",
     params:
         challenge_link = "https://github.com/ICTV-VBEG/ICTV-TaxonomyChallenge/raw/refs/heads/main/dataset/dataset_challenge.tar.gz?download=",
         challenge_file = "dataset_challenge.tar.gz",
         challenge_dir =  "dataset_challenge",
-    benchmark: f"{logs_dir}/prep_challenge_dataset.benchmark"
+    benchmark: f"{logs_dir}/download_challenge_dataset.benchmark"
     shell: 
         """
         curl -JL {params.challenge_link} -o {params.challenge_file}
@@ -65,7 +65,7 @@ rule download_and_prep_ictv_challenge:
 
 rule sketch_challenge_dataset:
     input:
-        ancient(f"{out_dir}/ictv-challenge.fromfile.csv")
+        ancient("dataset-challenge.fromfile.csv")
     output:
         challenge_zip=f"{out_dir}/ictv-challenge.zip"
     params:
@@ -129,7 +129,7 @@ rule sourmash_tg_to_challenge_format:
 
 rule summarize_resource_utilization:
     input:
-        benches = expand(f"{logs_dir}/{{log}}.benchmark", log=["download_database", "prep_challenge_dataset", "manysketch", "fmg", "tax-genome", "convert"]),
+        benches = expand(f"{logs_dir}/{{log}}.benchmark", log=["download_database", "download_challenge_dataset", "manysketch", "fmg", "tax-genome", "convert"]),
     output:
         benchmarks=f"{logs_dir}/benchmarks.csv",
         summary=f"{logs_dir}/summary.csv"

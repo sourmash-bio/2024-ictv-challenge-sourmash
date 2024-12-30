@@ -1,0 +1,6 @@
+.snakemake
+output*
+*zip
+*rocksdb
+*tar.gz
+dataset_challenge

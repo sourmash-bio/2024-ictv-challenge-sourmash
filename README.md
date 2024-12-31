@@ -59,6 +59,10 @@ Changing the k-mer size and scaling also have an impact upon sensitivity, specif
 #### Parameter tuning for `sourmash taxonomy`
 We have set a classification threshold of 75% estimated log containment ("containment ANI" [Rahman Hera, Pierce-Ward, and Koslicki](https://pubmed.ncbi.nlm.nih.gov/37344105/)) to accept classification at a given rank. If this threshold is not met, we move use an LCA approach on the gather results until we have sufficient % match. *This parameter can be modified in the `Snakefile` provided here (TAX_THRESHOLD).*
 
+## Authors
+- Anneliek M. ter Horst
+- N. Tessa Pierce-Ward
+
 ## References
 
 [1] [sourmash v4: A multitool to quickly search, compare, and analyze genomic and metagenomic data sets](https://joss.theoj.org/papers/10.21105/joss.06830)

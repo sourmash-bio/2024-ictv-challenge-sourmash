@@ -13,21 +13,22 @@
 # and created/activated the conda environment as specified in the README.
 # Then run:
 #
-#           snakemake -c 1
+#           snakemake -j 1
 #
-# You can modify the number of cores used by changing the -c parameter.
+# You can modify the number of cores used by changing the -c parameter, but
+# it does not significantly speed up this workflow. Larger datasets would
+# benefit more from parallelization.
 #
 # Requirements:
 # The challenge dataset is ~1.5 GB and the database is <0.5 GB; classification
 # requires ~1 GB of RAM. To be safe, we recommend running on a machine with
 # at least 5 GB disk space, 5G RAM. The full workflow (including data download)
-# takes <15 minutes to run using a single core, and can be sped up by providing
-# additional resources, e.g. -c 4 or above.
+# takes ~15 minutes to run.
 ############################################################################
 out_dir = "output.ictv-challenge"
 logs_dir = f"{out_dir}/logs"
 
-THRESHOLD_BP = 300
+THRESHOLD_BP = 200
 LGC_THRESHOLD = 0.75
 
 rule all:
@@ -37,15 +38,24 @@ rule all:
 
 rule download_database:
     output:
-        rocksdb_current = "vmr_MSL39_v4.skipm2n3-k24-sc100.rocksdb/CURRENT"
+        rocksdb_tar = "vmr_MSL39_v4.skipm2n3-k24-sc50.rocksdb.tar.gz"
     params:
-        download_link = "https://osf.io/download/f246c/",
-        download_file = "vmr_MSL39_v4.skipm2n3-k24-sc100.rocksdb.tar.gz",
+        download_link = "https://osf.io/download/u3ftq/",
     benchmark: f"{logs_dir}/download_database.benchmark"
     shell:
         """
         curl -JLO {params.download_link}
-        tar -xzf {params.download_file}
+        """
+
+rule untar_database:
+    input:
+        rocksdb_tar = ancient("vmr_MSL39_v4.skipm2n3-k24-sc50.rocksdb.tar.gz"),
+    output:
+        rocksdb_current = "vmr_MSL39_v4.skipm2n3-k24-sc50.rocksdb/CURRENT"
+    benchmark: f"{logs_dir}/untar_database.benchmark"
+    shell:
+        """
+        tar -xzf {input.rocksdb_tar}
         """
 
 rule download_and_prep_ictv_challenge:
@@ -69,7 +79,7 @@ rule sketch_challenge_dataset:
     output:
         challenge_zip=f"{out_dir}/ictv-challenge.zip"
     params:
-        param_str = "-p skipm2n3,k=24,scaled=100,abund",
+        param_str = "-p skipm2n3,k=24,scaled=50,abund",
     log: f"{logs_dir}/manysketch.log"
     benchmark: f"{logs_dir}/manysketch.benchmark"
     shell:
@@ -80,18 +90,18 @@ rule sketch_challenge_dataset:
 rule sourmash_fastmultigather:
     input:
         challenge_zip=f"{out_dir}/ictv-challenge.zip",
-        vmr_rdb_current = ancient("vmr_MSL39_v4.skipm2n3-k24-sc100.rocksdb/CURRENT")
+        vmr_rdb_current = ancient("vmr_MSL39_v4.skipm2n3-k24-sc50.rocksdb/CURRENT")
     output:
         fmg= f"{out_dir}/ictv-challenge.fmg.csv"
     log: f"{logs_dir}/fmg.log"
     benchmark: f"{logs_dir}/fmg.benchmark"
     params:
-        db_dir = lambda w: f"vmr_MSL39_v4.skipm2n3-k24-sc100.rocksdb",
+        db_dir = lambda w: f"vmr_MSL39_v4.skipm2n3-k24-sc50.rocksdb",
         threshold_bp = THRESHOLD_BP,
     shell:
         """
         sourmash scripts fastmultigather {input.challenge_zip} {params.db_dir} \
-                                         -m skipm2n3 -k 24 --scaled 100 \
+                                         -m skipm2n3 -k 24 --scaled 50 \
                                          --threshold-bp {params.threshold_bp} \
                                          -o {output.fmg} 2> {log}
         """

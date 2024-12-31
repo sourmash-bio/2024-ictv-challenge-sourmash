@@ -86,6 +86,6 @@ if __name__ == "__main__":
     p.add_argument("file_list", nargs='+', help="List of .benchmark files")
     p.add_argument("--benchmarks-csv", help="Output CSV file for benchmark data")
     p.add_argument("--summary-csv", help="Output CSV file for summary data")
-    p.add_argument("--exclude", nargs='*', default=["download_database", "download_challenge_dataset"], help="Keywords to exclude certain benchmark files from summary")
+    p.add_argument("--exclude", nargs='*', default=["download_database", "download_challenge_dataset", "untar_database"], help="Keywords to exclude certain benchmark files from summary")
     args = p.parse_args()
     main(args)

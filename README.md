@@ -1,4 +1,7 @@
 # ICTV Challenge: Taxonomic classification of viruses with sourmash
+
+[![DOI](https://zenodo.org/badge/909903061.svg)](https://doi.org/10.5281/zenodo.14583450)
+
 For the [ICTV Computational Virus Taxonomy Challenge](https://ictv-vbeg.github.io/ICTV-TaxonomyChallenge/), we used [sourmash](https://github.com/sourmash-bio) as a taxonomic classifier for viral sequences. This method has previously been shown to work well for microbial metagenomic profiling [(Portik, Brown, and Pierce-Ward, 2022)](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-022-05103-0).
 
 ## Resource Requirements

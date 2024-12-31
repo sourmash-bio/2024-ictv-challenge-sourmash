@@ -48,9 +48,9 @@ def convert_to_challenge_tsv(input_file, output_file):
         reader = csv.DictReader(infile)
         # Write output file
         writer = csv.DictWriter(outfile, fieldnames=output_columns, delimiter=',')
-        #writer.writeheader()
         outfile.write(",".join(custom_header) + "\n") # write custom header instead
 
+        out_rows = {}
         for row in reader:
             lineage_info = ICTVRankLineageInfo(lineage_str=row["lineage"])
             lin_names = lineage_info.zip_lineage()
@@ -64,8 +64,13 @@ def convert_to_challenge_tsv(input_file, output_file):
             output_row["SequenceID"] = row["query_name"]
             output_row.update(lineage_dict)
 
-            # Populate lineage information
-            writer.writerow(output_row)
+            # add to dict instead of writing directly so we can preserve order
+            out_rows[row["query_name"]] = output_row
+            #writer.writerow(output_row)
+
+        # Populate lineage information.
+        for query in sorted(out_rows):
+            writer.writerow(out_rows[query])
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Convert ICTV lineage CSV to TSV with detailed taxonomy columns.")

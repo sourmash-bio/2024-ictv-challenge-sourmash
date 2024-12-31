@@ -23,18 +23,19 @@
 # The challenge dataset is ~1.5 GB and the database is <0.5 GB; classification
 # requires ~1 GB of RAM. To be safe, we recommend running on a machine with
 # at least 5 GB disk space, 5G RAM. The full workflow (including data download)
-# takes ~15 minutes to run.
+# takes 5-15 minutes to run.
 ############################################################################
 out_dir = "output.ictv-challenge"
 logs_dir = f"{out_dir}/logs"
 
 THRESHOLD_BP = 200
-LGC_THRESHOLD = 0.75
+TAX_THRESHOLD = 0.75
 
 rule all:
     input:
         f"{out_dir}/ictv-challenge.sourmash.csv",
         f"{logs_dir}/summary.csv",
+        f"{out_dir}/results-diff.csv",
 
 rule download_database:
     output:
@@ -58,7 +59,7 @@ rule untar_database:
         tar -xzf {input.rocksdb_tar}
         """
 
-rule download_and_prep_ictv_challenge:
+rule download_ictv_challenge:
     output:
         challenge_fromfile="dataset-challenge.fromfile.csv",
     params:
@@ -115,19 +116,20 @@ rule sourmash_tax_genome:
     log: f"{logs_dir}/tax-genome.log"
     benchmark: f"{logs_dir}/tax-genome.benchmark"
     params:
-        out_base= lambda w: f"ictv-challenge",
-        out_dir= out_dir,
-        lgc_threshold = LGC_THRESHOLD,
+        out_base = lambda w: f"ictv-challenge",
+        out_dir = out_dir,
+        tax_threshold = TAX_THRESHOLD,
     shell:
         """
         sourmash tax genome -t {input.vmr_lineages} -g {input.fmg} --ictv -F csv_summary \
-                            --ani-threshold {params.lgc_threshold} --output-base {params.out_base} \
+                            --ani-threshold {params.tax_threshold} --output-base {params.out_base} \
                             --output-dir {params.out_dir} 2> {log}
         """
 
 rule sourmash_tg_to_challenge_format:
     input: 
-        tax=f"{out_dir}/ictv-challenge.classifications.csv"
+        tax=f"{out_dir}/ictv-challenge.classifications.csv",
+        dataset_csv=ancient("dataset-challenge.fromfile.csv"),
     output:
         ch= f"{out_dir}/ictv-challenge.sourmash.csv"
     log: f"{logs_dir}/convert.log"
@@ -146,4 +148,19 @@ rule summarize_resource_utilization:
     shell:
         """
         python scripts/benchmarks.py {input.benches} --benchmarks-csv {output.benchmarks} --summary-csv {output.summary}
+        """
+
+rule compare_vs_saved_results:
+    input:
+        saved_results="results/ictv-challenge.sourmash.csv",
+        workflow_results="output.ictv-challenge/ictv-challenge.sourmash.csv",
+    output:
+        diff=f"{out_dir}/results-diff.csv"
+    shell:
+        """
+        python scripts/compare-results.py --f1 {input.saved_results} \
+                                          --f1-name "saved" \
+                                          --f2 {input.workflow_results} \
+                                          --f2-name "workflow" \
+                                          --output {output}
         """

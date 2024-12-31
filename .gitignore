@@ -4,3 +4,4 @@ output*
 *rocksdb
 *tar.gz
 dataset_challenge
+dataset-challenge.fromfile.csv

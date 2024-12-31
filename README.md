@@ -53,7 +53,7 @@ Sourmash is a flexible toolkit for k-mer based analyses. The parameters in this 
 #### Parameter tuning for `gather`
 To identify a reference genome match, we require a minimum of at least 200 nucleotides/bp in common. In general, we recommend requiring threshold_bp>=3\*scaled, but this can be increased for greater specificity. 
 
-Changing the k-mer size and scaling also have an impact upon sensitivity, specificity, and resource utilization. For example, running this workflow with `scaled=100` reduces the sourmash steps from 8m30s to 2m30s at the expense of classification of some of the shorter sequences. Longer k-mer sizes are more specific, shorter are more sensitive. Skipmers have increased sensitivity relative to standard DNA k-mers. Further details on parameter tuning are available on the [sourmash FAQ](https://sourmash.readthedocs.io/en/latest/faq.html).
+Changing the k-mer size and scaling also have an impact upon sensitivity, specificity, and resource utilization. For example, running this workflow with `scaled=100` reduces the runtime at the expense of classification capacity for shorter sequences. Longer k-mer sizes are more specific, shorter are more sensitive. Skipmers have increased sensitivity relative to standard DNA k-mers. Further details on parameter tuning are available on the [sourmash FAQ](https://sourmash.readthedocs.io/en/latest/faq.html).
 
 
 #### Parameter tuning for `sourmash taxonomy`

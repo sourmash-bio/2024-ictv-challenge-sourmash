@@ -1,4 +1,4 @@
-name: ictv-challenge-sourmash
+name: 2024-ictv-challenge-sourmash
 channels:
   - conda-forge
   - bioconda

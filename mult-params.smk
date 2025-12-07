@@ -18,12 +18,12 @@
 # and created/activated the conda environment as specified in the README.
 # Then run:
 #
-#           snakemake -j 4
+#           snakemake -j1
 #
 # You can modify the number of cores used by changing the -c parameter, but
-# it does not significantly speed up this workflow. Here we use 4 to allow
-# classification with all four parameter sets at once. Larger datasets may
-# benefit from more cores.
+# it does not significantly speed up this workflow. Here we use -j1 to ensure
+# only one job is running at once to allow for independent benchmarking of each
+# step. Larger datasets may benefit from more cores.
 #
 # Requirements:
 # The challenge dataset is ~1.5 GB and the database is <0.5 GB; classification
@@ -60,6 +60,7 @@ rule all:
     input:
         expand(f"{out_dir}/ictv-challenge.{{stype}}.sourmash.csv", stype=submission_types),
         f"{logs_dir}/summary.csv",
+        f"{logs_dir}/benchmarks.csv",
         expand(f"{out_dir}/results-diff.{{stype}}.csv", stype=submission_types),
 
 rule download_database:
@@ -99,15 +100,16 @@ rule download_ictv_challenge:
         python scripts/challengedir-to-csvinput.py {params.challenge_dir} {output.challenge_fromfile}
         """
 
-rule sketch_challenge_dataset:
+# sketch each parameter set separately to allow independent benchmarking of each
+rule sketch_challenge_dataset_individual:
     input:
         ancient("dataset-challenge.fromfile.csv")
     output:
-        challenge_zip=f"{out_dir}/ictv-challenge.zip"
+        challenge_zip=f"{out_dir}/ictv-challenge.{{stype}}.zip"
     params:
-        param_str=' '.join(param_strings[stype] for stype in submission_types)
-    log: f"{logs_dir}/manysketch_multi.log"
-    benchmark: f"{logs_dir}/manysketch_multi.benchmark"
+        param_str=lambda w: param_strings[w.stype],
+    log: f"{logs_dir}/manysketch.{{stype}}.log"
+    benchmark: f"{logs_dir}/manysketch.{{stype}}.benchmark"
     shell:
         """
         sourmash scripts manysketch {input} {params.param_str} -o {output} 2> {log}
@@ -115,7 +117,7 @@ rule sketch_challenge_dataset:
 
 rule sourmash_fastmultigather:
     input:
-        challenge_zip=f"{out_dir}/ictv-challenge.zip",
+        challenge_zip=f"{out_dir}/ictv-challenge.{{stype}}.zip",
         vmr_rdb_current = ancient("vmr_MSL39_v4.{stype}.rocksdb/CURRENT")
     output:
         fmg=f"{out_dir}/ictv-challenge.{{stype}}.fmg.csv"
@@ -169,10 +171,9 @@ rule sourmash_tg_to_challenge_format:
 
 rule summarize_resource_utilization:
     input:
-        # benches = expand(f"{logs_dir}/{{log}}.benchmark", log=["download_database", "download_challenge_dataset", "manysketch", "fmg", "tax-genome", "convert"]),
         benches=expand(f"{logs_dir}/download_database.{{stype}}.benchmark", stype = submission_types) +
                 expand(f"{logs_dir}/download_challenge_dataset.benchmark", ) +
-                expand(f"{logs_dir}/manysketch_multi.benchmark", ) +
+                expand(f"{logs_dir}/manysketch.{{stype}}.benchmark", stype = submission_types) +
                 expand(f"{logs_dir}/fmg_{{stype}}.benchmark", stype=submission_types) +
                 expand(f"{logs_dir}/tax-genome_{{stype}}.benchmark", stype=submission_types) +
                 expand(f"{logs_dir}/convert_{{stype}}.benchmark", stype=submission_types),

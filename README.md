@@ -37,7 +37,7 @@ snakemake -j 1
 ## Results
 Results will appear in the `output.ictv-challenge` folder (filename: `ictv-challenge.sourmash.csv`) and should be identical to the pre-calculated results. We include a workflow step that compares the new results with the saved results and writes any differences to `output.ictv-challenge.results-diff.csv`.
 
-Pre-calculated results are available at: `results/ictv-challenge.sourmash.csv`
+Pre-calculated results are available at: `results/ictv-challenge.skipm2n3-k24-sc50.sourmash.csv`
 
 
 ## Workflow Details
@@ -61,6 +61,23 @@ Changing the k-mer size and scaling also have an impact upon sensitivity, specif
 
 #### Parameter tuning for `sourmash taxonomy`
 We have set a classification threshold of 75% estimated log containment ("containment ANI" [Rahman Hera, Pierce-Ward, and Koslicki](https://pubmed.ncbi.nlm.nih.gov/37344105/)) to accept classification at a given rank. If this threshold is not met, we move use an LCA approach on the gather results until we have sufficient % match. *This parameter can be modified in the `Snakefile` provided here (TAX_THRESHOLD).*
+
+## Running multiple parameter sets
+
+We provide an additional snakemake workflow (`mult-params.smk`) that allows you to run multiple parameter sets for sketching and classification. This can be useful for testing different tradeoffs between sensitivity, specificity, and resource utilization. Here, we run four different parameter sets: DNA k-mers (k=31, scaled=50 and k=21, scaled=50), as well as a longer skip-mer (k=27, scaled=50). To run this workflow, use the same setup instructions as above, but run: 
+
+```
+snakemake -j 4 -c 4 -s mult-params.smk
+```
+The output files will be written to `output.ictv-challenge.multiparam`, with each parameter set indicated in the filename.
+
+These will be the final results files in that folder:
+- `ictv-challenge.skipm2n3-k24-sc50.sourmash.csv` (default parameters used in main workflow)
+- `ictv-challenge.dna-k31-sc50.sourmash.csv`
+- `ictv-challenge.dna-k21-sc50.sourmash.csv`
+- `ictv-challenge.skipm2n3-k27-sc50.sourmash.csv`
+
+Precomputed results for these parameter sets are available in the `results` folder for comparison.
 
 ## Authors
 - Anneliek M. ter Horst

@@ -41,6 +41,7 @@ That folder will also contain log files and benchmark files for each step of the
 
 Directory structure:
 
+```
 output.ictv-challenge
 ├── ictv-challenge.classifications.csv
 ├── ictv-challenge.fmg.csv
@@ -60,6 +61,7 @@ output.ictv-challenge
 │   ├── tax-genome.benchmark
 │   └── tax-genome.log
 └── results-diff.csv
+```
 
 > The key files are `ictv-challenge.sourmash.csv`, which contains the taxonomic classifications for each sequence in the challenge dataset and `logs/benchmarks.csv`, which summarizes resource utilization for each step of the workflow. The full sourmash gather results used for classifications can be found in the `ictv-challenge.fmg.csv` file.
 
@@ -107,15 +109,16 @@ Precomputed results for these parameter sets are available in the `results` fold
 
 Directory structure (key files only):
 
+```
 output.ictv-challenge.multiparam
 ├── ictv-challenge.DNA-k21-sc50.sourmash.csv
 ├── ictv-challenge.DNA-k31-sc50.sourmash.csv
 ├── ictv-challenge.skipm2n3-k24-sc50.sourmash.csv
 ├── ictv-challenge.skipm2n3-k27-sc50.sourmash.csv
-├── logs
-│   ├── benchmarks.csv
-|   └──  summary.csv
-
+└── logs
+    ├── benchmarks.csv
+    └── summary.csv
+```
 
 ## Authors
 - Anneliek M. ter Horst

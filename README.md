@@ -37,6 +37,32 @@ snakemake -j 1
 ## Results
 Results will appear in the `output.ictv-challenge` folder (filename: `ictv-challenge.sourmash.csv`) and should be identical to the pre-calculated results. We include a workflow step that compares the new results with the saved results and writes any differences to `output.ictv-challenge.results-diff.csv`.
 
+That folder will also contain log files and benchmark files for each step of the workflow, and aggregated benchmark results in `logs/benchmarks.csv`.
+
+Directory structure:
+
+output.ictv-challenge
+├── ictv-challenge.classifications.csv
+├── ictv-challenge.fmg.csv
+├── ictv-challenge.sourmash.csv
+├── ictv-challenge.zip
+├── logs
+│   ├── benchmarks.csv
+│   ├── convert.benchmark
+│   ├── convert.log
+│   ├── download_challenge_dataset.benchmark
+│   ├── download_database.benchmark
+│   ├── fmg.benchmark
+│   ├── fmg.log
+│   ├── manysketch.benchmark
+│   ├── manysketch.log
+│   ├── summary.csv
+│   ├── tax-genome.benchmark
+│   └── tax-genome.log
+└── results-diff.csv
+
+> The key files are `ictv-challenge.sourmash.csv`, which contains the taxonomic classifications for each sequence in the challenge dataset and `logs/benchmarks.csv`, which summarizes resource utilization for each step of the workflow. The full sourmash gather results used for classifications can be found in the `ictv-challenge.fmg.csv` file.
+
 Pre-calculated results are available at: `results/ictv-challenge.skipm2n3-k24-sc50.sourmash.csv`
 
 
@@ -78,6 +104,18 @@ These will be the final results files in that folder:
 - `ictv-challenge.skipm2n3-k27-sc50.sourmash.csv`
 
 Precomputed results for these parameter sets are available in the `results` folder for comparison.
+
+Directory structure (key files only):
+
+output.ictv-challenge.multiparam
+├── ictv-challenge.DNA-k21-sc50.sourmash.csv
+├── ictv-challenge.DNA-k31-sc50.sourmash.csv
+├── ictv-challenge.skipm2n3-k24-sc50.sourmash.csv
+├── ictv-challenge.skipm2n3-k27-sc50.sourmash.csv
+├── logs
+│   ├── benchmarks.csv
+|   └──  summary.csv
+
 
 ## Authors
 - Anneliek M. ter Horst

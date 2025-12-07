@@ -60,7 +60,7 @@ rule all:
     input:
         expand(f"{out_dir}/ictv-challenge.{{stype}}.sourmash.csv", stype=submission_types),
         f"{logs_dir}/summary.csv",
-        f"{out_dir}/results-diff.csv",
+        expand(f"{out_dir}/results-diff.{{stype}}.csv", stype=submission_types),
 
 rule download_database:
     output:
@@ -186,10 +186,10 @@ rule summarize_resource_utilization:
 
 rule compare_vs_saved_results:
     input:
-        saved_results="results/ictv-challenge.sourmash.csv",
-        workflow_results=f"{out_dir}/ictv-challenge.skipm2n3-k24-sc50.sourmash.csv",
+        saved_results="results/ictv-challenge.{stype}.sourmash.csv",
+        workflow_results=f"{out_dir}/ictv-challenge.{{stype}}.sourmash.csv",
     output:
-        diff=f"{out_dir}/results-diff.csv"
+        diff=f"{out_dir}/results-diff.{{stype}}.csv"
     shell:
         """
         python scripts/compare-results.py --f1 {input.saved_results} \
